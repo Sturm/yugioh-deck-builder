@@ -8,9 +8,37 @@
             <v-row>
               <v-col>
                 <v-select
-                  :items="items"
+                  :items="Object.keys(decks)"
                   label="Select deck"
-                ></v-select>
+                  @input="selectDeck"
+                />
+                <template>
+                  <v-dialog persistent max-width="290" v-model="dialog">
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-btn color="primary" dark v-bind="attrs" v-on="on">
+                        New deck
+                      </v-btn>
+                    </template>
+                    <v-card>
+                      <v-card-title class="headline">
+                        Add new deck
+                      </v-card-title>
+                      <v-card-text>
+                        <v-text-field
+                          label="Deck name"
+                          v-model="newDeck"
+                          required
+                        ></v-text-field>
+                      </v-card-text>
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn color="green darken-1" text @click="addNewDeck">
+                          Add
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                </template>
               </v-col>
             </v-row>
           </v-card>
@@ -18,7 +46,6 @@
         <v-col cols="8">
           <v-card elevation="2">
             <h2>Main deck: {{ deck.main.length }}</h2>
-
             <draggable
               v-model="deck.main"
               @start="drag=true"
@@ -85,8 +112,11 @@
     },
     data() {
       return {
+        dialog: false,
         searchPhrase: '',
+        newDeck: '',
         cardsFound: [],
+        decks: {},
         deck: {
           main: [],
           extra: [],
@@ -114,10 +144,9 @@
       }
     },
     mounted() {
-      if (null !== localStorage.getItem('deck')) {
-        this.deck = JSON.parse(localStorage.getItem('deck'));
+      if (null !== localStorage.getItem('decks')) {
+        this.decks = JSON.parse(localStorage.getItem('decks'));
       }
-      console.log(this.deck);
     },
     computed: {},
     methods: {
@@ -150,7 +179,7 @@
         this.save();
       },
       save() {
-        localStorage.setItem('deck', JSON.stringify(this.deck));
+        localStorage.setItem('decks', JSON.stringify(this.decks));
       },
       checkCardType(card) {
         let type;
@@ -179,6 +208,21 @@
           }
         }
         return 3;
+      },
+      addNewDeck() {
+        this.decks[this.newDeck] = {
+          main: [],
+          extra: [],
+          side: [],
+        };
+        this.save();
+        this.deck = this.decks[this.newDeck];
+
+        this.newDeck = '';
+        if (this.dialog) this.dialog = false;
+      },
+      selectDeck(selectedDeck) {
+        this.deck = this.decks[selectedDeck]
       }
     }
   }
