@@ -1,9 +1,6 @@
 <template>
   <div>
-    <v-navigation-drawer
-      v-model="drawer"
-      app
-    >
+    <v-navigation-drawer v-model="drawer" app>
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title class="title">
@@ -15,10 +12,7 @@
         </v-list-item-content>
       </v-list-item>
       <v-divider></v-divider>
-      <v-list
-        dense
-        nav
-      >
+      <v-list dense nav>
         <v-list-item
           v-for="item in links"
           :key="item.title"
@@ -34,8 +28,8 @@
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
-    <v-app-bar app>
-      <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
+    <v-app-bar app color="primary darken-2" class="white--text">
+      <v-app-bar-nav-icon @click="drawer = !drawer" class="white--text"></v-app-bar-nav-icon>
 
       <v-toolbar-title>Yu-Gi-Oh! Deck Builder</v-toolbar-title>
     </v-app-bar>
@@ -47,7 +41,7 @@
     name: 'Drawer',
     props: ['links'],
     data: () => ({
-      drawer: null,
+      drawer: false,
     }),
   }
 </script>
