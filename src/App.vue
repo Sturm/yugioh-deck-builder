@@ -3,7 +3,7 @@
     <Drawer :links="items"></Drawer>
     <v-main>
       <v-row>
-        <v-col>
+        <v-col lg="3" md="3" sm="12">
           <v-card elevation="2">
             <v-row>
               <v-col>
@@ -17,7 +17,8 @@
                     <template v-slot:activator="{ on, attrs }">
                       <v-menu offset-y>
                         <template v-slot:activator="{ on, attrs }">
-                          <v-btn color="primary darken-1" class="ma-2" v-bind="attrs" v-on="on">Export
+                          <v-btn color="primary darken-1" class="ma-2" v-bind="attrs" v-on="on">
+                            Export
                           </v-btn>
                         </template>
                         <v-list>
@@ -39,22 +40,25 @@
                       </v-btn>
                     </template>
                     <v-card>
-                      <v-card-title class="headline">
-                        Add new deck
-                      </v-card-title>
-                      <v-card-text>
-                        <v-text-field
-                          label="Deck name"
-                          v-model="newDeck"
-                          required
-                        ></v-text-field>
-                      </v-card-text>
-                      <v-card-actions>
-                        <v-spacer></v-spacer>
-                        <v-btn color="green darken-1" text @click="addNewDeck">
-                          Add
-                        </v-btn>
-                      </v-card-actions>
+                      <v-form v-on:submit="addNewDeck">
+                        <v-card-title class="headline">
+                          Add new deck
+                        </v-card-title>
+                        <v-card-text>
+                          <v-text-field
+                            label="Deck name"
+                            v-model="newDeck"
+                            autofocus
+                            required
+                          ></v-text-field>
+                        </v-card-text>
+                        <v-card-actions>
+                          <v-spacer></v-spacer>
+                          <v-btn color="green darken-1" text @click="addNewDeck">
+                            Add
+                          </v-btn>
+                        </v-card-actions>
+                      </v-form>
                     </v-card>
                   </v-dialog>
                 </template>
@@ -62,18 +66,19 @@
             </v-row>
           </v-card>
           <v-card elevation="2" v-if="featuredCard !== null">
-            <h2>{{ featuredCard.name }}</h2>
-            {{ featuredCard.desc }}
-            <br>
-            <div v-if="featuredCard.atk && featuredCard.def">
-              <b>ATK:</b> {{ featuredCard.atk }} <b>DEF:</b> {{ featuredCard.def }}
-            </div>
+            <CardFeatured :card="featuredCard"/>
           </v-card>
         </v-col>
-        <v-col cols="6">
+        <v-col lg="6" md="6" sm="12">
           <v-card elevation="2" class="card-deck">
             <div v-if="selectedDeck !== null">
-              <h2>Main deck: {{ deck.main.length }}</h2>
+              <span class="text--disabled">
+               {{ selectedDeck }}
+              </span>
+              <h2 v-if="deck.main.length !== 0">
+                <v-badge color="amber darken-1" :content="deck.main.length">Main Deck</v-badge>
+              </h2>
+              <h2 v-else>Main Deck</h2>
               <draggable
                 v-model="deck.main"
                 @start="drag=true"
@@ -92,13 +97,16 @@
                 </div>
               </draggable>
               <br><br>
-              <h2>Extra deck: {{ deck.extra.length }}</h2>
+              <h2 v-if="deck.extra.length !== 0">
+                <v-badge color="black" :content="deck.extra.length">Extra Deck</v-badge>
+              </h2>
+              <h2 v-else>Extra Deck</h2>
               <draggable
                 v-model="deck.extra"
                 @start="drag=true"
                 @end="drag=false"
                 @update="save"
-                class="main-deck"
+                class="extra-deck"
               >
                 <div
                   v-for="(card,index) in deck.extra"
@@ -110,7 +118,10 @@
                 </div>
               </draggable>
               <br><br>
-              <h2>Side deck: {{ deck.side.length }}</h2>
+              <h2 v-if="deck.side.length !== 0">
+                <v-badge color="amber darken-1" :content="deck.side.length">Side Deck</v-badge>
+              </h2>
+              <h2 v-else>Side Deck</h2>
               <draggable
                 v-model="deck.side"
                 @start="drag=true"
@@ -136,29 +147,12 @@
             </div>
           </v-card>
         </v-col>
-        <v-col>
+        <v-col lg="3" md="3" sm="12">
           <v-card elevation="2">
-            <h2>Deck builder</h2>
-            <v-text-field
-              label="Search card"
-              v-model="searchPhrase"
-              @input="searchCards"
+            <CardSearch
+              :show-card="showCard"
+              :add-card-to-deck="addCardToDeck"
             />
-            <div class="search-deck">
-              <div
-                v-for="card in cardsFound"
-                :key="card.id"
-                class="search-card"
-                @mouseover="showCard(card)"
-              >
-                <img :src="card.card_images[0].image_url"/>
-                <div>
-                  {{ card.name }}<br>
-                  <v-btn class="ma-1" color="primary" @click="addCardToDeck(card)">Add</v-btn>
-                  <v-btn class="ma-1" @click="addCardToDeck(card, true)">Side</v-btn>
-                </div>
-              </div>
-            </div>
           </v-card>
         </v-col>
       </v-row>
@@ -170,21 +164,26 @@
   import Drawer from './components/Drawer/Drawer';
   import draggable from 'vuedraggable';
   import Card from './components/Card/Card';
+  import CardSearch from './components/CardSearch/CardSearch';
+  import CardFeatured from './components/CardFeatured/CardFeatured';
+  import CardHelper from './helpers/cardHelper';
 
   export default {
     name: 'App',
+
     components: {
+      CardFeatured,
+      CardSearch,
       Drawer,
       draggable,
       Card,
     },
+
     data() {
       return {
         dialog: false,
-        searchPhrase: '',
         selectedDeck: null,
         newDeck: '',
-        cardsFound: [],
         featuredCard: null,
         decks: {},
         deck: {
@@ -203,23 +202,14 @@
         }
       }
     },
+
     mounted() {
       if (null !== localStorage.getItem('decks')) {
         this.decks = JSON.parse(localStorage.getItem('decks'));
       }
     },
-    computed: {},
-    methods: {
-      searchCards() {
-        if (this.searchPhrase.length === 0) this.cardsFound = [];
-        if (this.searchPhrase.length <= 3) return;
 
-        fetch(`https://db.ygoprodeck.com/api/v7/cardinfo.php?fname=${this.searchPhrase}`)
-        .then(res => res.json())
-        .then(json => {
-          this.cardsFound = json.data;
-        });
-      },
+    methods: {
       addCardToDeck(card, toSideDeck = false) {
         const type = toSideDeck ? 'side' : this.checkCardType(card);
 
@@ -228,19 +218,22 @@
 
         /** Check if card does not exceed max copies */
         const cardCount = this.deck[type].filter(cardInDeck => cardInDeck.name === card.name).length;
-        const cardMaxCopies = this.checkBanlist(card);
+        const cardMaxCopies = CardHelper.checkBanlist(card);
         if (cardCount >= cardMaxCopies) return;
 
         this.deck[type] = [...this.deck[type], card];
         this.save();
       },
+
       removeCardFromDeck(card) {
         this.deck.main.splice(this.deck.main.indexOf(card), 1);
         this.save();
       },
+
       save() {
         localStorage.setItem('decks', JSON.stringify(this.decks));
       },
+
       checkCardType(card) {
         let type;
         switch (card.type) {
@@ -256,38 +249,33 @@
         }
         return type;
       },
-      checkBanlist(card) {
-        if (typeof card.banlist_info !== 'undefined' && typeof card.banlist_info.ban_tcg !== 'undefined') {
-          switch (card.banlist_info.ban_tcg) {
-            case 'Banned':
-              return 0;
-            case 'Limited':
-              return 1;
-            case 'Semi-Limited':
-              return 2;
-          }
-        }
-        return 3;
-      },
-      addNewDeck() {
+
+
+
+      addNewDeck(e) {
+        e.preventDefault();
         this.decks[this.newDeck] = {
           main: [],
           extra: [],
           side: [],
         };
         this.save();
+        this.selectedDeck = this.newDeck;
         this.deck = this.decks[this.newDeck];
 
         this.newDeck = '';
         if (this.dialog) this.dialog = false;
       },
+
       selectDeck(selectedDeck) {
         this.deck = this.decks[selectedDeck];
         this.selectedDeck = selectedDeck;
       },
+
       showCard(card) {
         this.featuredCard = card;
       },
+
       sortDeck() {
         ['main', 'extra', 'side'].forEach(deckType => {
           this.deck[deckType] = this.deck[deckType].sort((a, b) => {
@@ -303,15 +291,19 @@
         });
         this.save();
       },
+
       exportDeck(deckType) {
         console.log(deckType);
       }
     }
   }
-
 </script>
 
 <style>
+  .col {
+    flex-basis: auto !important;
+  }
+
   html, body {
     font-family: Roboto, sans-serif;
   }
@@ -326,22 +318,23 @@
   }
 
 
-  .main-deck {
+  .main-deck,
+  .extra-deck {
     display: flex;
     flex-wrap: wrap;
   }
 
-  .card {
+
+  .extra-deck .card {
     display: flex;
     flex-direction: column;
-    /*margin: 2px;*/
-    /*width: 55px;*/
-    /*width: 10%;*/
-    /*max-width: 10%;*/
-    flex: 0 1 10%;
-
-    /*flex-direction: column;*/
+    flex: 0 1 2%;
   }
+
+  .extra-deck .card img {
+    height: 60px;
+  }
+
 
   .card img {
     height: 80px;
@@ -371,6 +364,7 @@
 
   .search-deck .search-card img {
     width: 55px;
+    max-height: 80px;
   }
 
   .card-deck h2 {

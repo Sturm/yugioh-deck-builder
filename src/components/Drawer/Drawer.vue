@@ -39,7 +39,9 @@
 <script>
   export default {
     name: 'Drawer',
-    props: ['links'],
+    props: {
+      links: Array,
+    },
     data: () => ({
       drawer: false,
     }),
