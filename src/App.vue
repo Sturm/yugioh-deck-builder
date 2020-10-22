@@ -210,8 +210,9 @@
     },
 
     methods: {
+
       addCardToDeck(card, toSideDeck = false) {
-        const type = toSideDeck ? 'side' : this.checkCardType(card);
+        const type = toSideDeck ? 'side' : CardHelper.checkCardType(card);
 
         /** Check if deck does not exceed card limit */
         if (this.deck[type].length >= this.maxCards[type]) return;
@@ -233,24 +234,6 @@
       save() {
         localStorage.setItem('decks', JSON.stringify(this.decks));
       },
-
-      checkCardType(card) {
-        let type;
-        switch (card.type) {
-          case 'XYZ Monster':
-          case 'Fusion Monster':
-          case 'Link Monster':
-          case 'Synchro Monster':
-            type = 'extra';
-            break;
-          default:
-            type = 'main';
-            break;
-        }
-        return type;
-      },
-
-
 
       addNewDeck(e) {
         e.preventDefault();

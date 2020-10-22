@@ -11,5 +11,21 @@ module.exports = {
       }
     }
     return 3;
-  }
-}
+  },
+
+  checkCardType(card) {
+    let type;
+    switch (card.type) {
+      case 'XYZ Monster':
+      case 'Fusion Monster':
+      case 'Link Monster':
+      case 'Synchro Monster':
+        type = 'extra';
+        break;
+      default:
+        type = 'main';
+        break;
+    }
+    return type;
+  },
+};
